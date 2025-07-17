@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Polyfill for Node-style globals -->
+  <script>window.global = window;</script>
+  <!-- Load SimplePeer from CDN -->
+  <script src="https://unpkg.com/simple-peer/simplepeer.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinema Frontend</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/index.tsx"></script>
+</body>
+</html>

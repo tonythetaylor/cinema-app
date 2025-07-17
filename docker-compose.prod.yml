@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  api:
+    build: ./backend
+    image: cinema-api:prod
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/vault.db:/app/vault.db
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    image: cinema-frontend:prod
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
