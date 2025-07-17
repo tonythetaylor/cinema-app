@@ -5,6 +5,11 @@
 **/yarn-error.log*
 **/package-lock.json
 **/yarn.lock
+
+# ignore built assets and uploads
+**/public/assets/*.mp4
+**/public/assets/*.mov
+
 # build outputs
 **/dist/
 **/build/
