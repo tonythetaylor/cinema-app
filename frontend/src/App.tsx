@@ -5,8 +5,10 @@ import NamePrompt from "./components/NamePrompt";
 
 export default function App() {
   // in practice you might pull these from your router or some config
-  const movieId = "Sinners-2025";
-  const movieUrl = "/assets/Sinners.mp4"; // put a sample mp4 under public/assets
+  // const movieId = "Sinners-2025";
+  // const movieUrl = "/assets/Sinners.mp4"; // put a sample mp4 under public/assets
+  const movieId  = process.env.REACT_APP_MOVIE_ID!;
+  const movieUrl = process.env.REACT_APP_MOVIE_URL!;
 
  // initialize from localStorage (if any)
   const [userName, setUserName] = useState(() => {
