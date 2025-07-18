@@ -7,13 +7,13 @@ interface ChatMessage {
   movieId: string;
   user: string;
   text: string;
-  timestamp: number;    // video time in seconds
-  sentAt: string;       // ISO timestamp
+  timestamp: number; // video time in seconds
+  sentAt: string; // ISO timestamp
 }
 
 interface ControlEventBase {
   type: "play" | "pause" | "seek" | "init" | "ping";
-  timestamp: number;    // video.currentTime
+  timestamp: number; // video.currentTime
   sentAt: string;
 }
 interface PlayPauseEvent extends ControlEventBase {
@@ -26,7 +26,11 @@ interface InitEvent extends ControlEventBase {
   type: "init";
   // you could extend this with `isPlaying: boolean` if your server sends it
 }
-type ControlEvent = PlayPauseEvent | SeekEvent | InitEvent | { type: "ping"; timestamp: number; sentAt: string };
+type ControlEvent =
+  | PlayPauseEvent
+  | SeekEvent
+  | InitEvent
+  | { type: "ping"; timestamp: number; sentAt: string };
 
 interface Props {
   movieUrl: string;
@@ -76,15 +80,25 @@ export default function VideoPlayerWithChat({
     let reconnectTimeout: any;
 
     function connect() {
+      // if (!movieId || !userId) {
+      //   console.warn("Missing movieId or userId for WebSocket connection.");
+      //   return;
+      // }
       ws = new WebSocket(
         `${WS_SCHEME}//${window.location.host}` +
-        `/ws/chat?movieId=${movieId}&userId=${encodeURIComponent(userId)}`
+          `/ws/chat?movieId=${movieId}&userId=${encodeURIComponent(userId)}`
       );
       ws.onmessage = handleChatMessage;
       ws.onopen = () => {
         pingInterval = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: "ping", timestamp: 0, sentAt: new Date().toISOString() }));
+            ws.send(
+              JSON.stringify({
+                type: "ping",
+                timestamp: 0,
+                sentAt: new Date().toISOString(),
+              })
+            );
           }
         }, 30_000);
       };
@@ -149,7 +163,13 @@ export default function VideoPlayerWithChat({
 
     const pingInt = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: "ping", timestamp: 0, sentAt: new Date().toISOString() }));
+        ws.send(
+          JSON.stringify({
+            type: "ping",
+            timestamp: 0,
+            sentAt: new Date().toISOString(),
+          })
+        );
       }
     }, 30_000);
 
@@ -191,32 +211,40 @@ export default function VideoPlayerWithChat({
   const behind = lastRemoteTime - (videoRef.current?.currentTime || 0);
   const showCatchUp = behind > 5;
 
-const doCatchUp = () => {
-  const vid = videoRef.current;
-  const ws = ctlWsRef.current;
-  if (!vid || !ws || ws.readyState !== WebSocket.OPEN) return;
+  const doCatchUp = () => {
+    const vid = videoRef.current;
+    const ws = ctlWsRef.current;
+    if (!vid || !ws || ws.readyState !== WebSocket.OPEN) return;
 
-  // 1) jump to the remote time
-  vid.currentTime = lastRemoteTime;
+    // 1) jump to the remote time
+    vid.currentTime = lastRemoteTime;
 
-  // 2) resume playing locally
-  vid.play();
+    // 2) resume playing locally
+    vid.play();
 
-  // 3) notify everyone: first a seek, then a play
-  ws.send(JSON.stringify({
-    type: "seek",
-    timestamp: Math.floor(vid.currentTime * 1000) / 1000,
-    sentAt: new Date().toISOString(),
-  }));
-  ws.send(JSON.stringify({
-    type: "play",
-    timestamp: Math.floor(vid.currentTime * 1000) / 1000,
-    sentAt: new Date().toISOString(),
-  }));
-};
+    // 3) notify everyone: first a seek, then a play
+    ws.send(
+      JSON.stringify({
+        type: "seek",
+        timestamp: Math.floor(vid.currentTime * 1000) / 1000,
+        sentAt: new Date().toISOString(),
+      })
+    );
+    ws.send(
+      JSON.stringify({
+        type: "play",
+        timestamp: Math.floor(vid.currentTime * 1000) / 1000,
+        sentAt: new Date().toISOString(),
+      })
+    );
+  };
 
   return (
-    <div className={`flex h-full ${isPlaying ? "bg-black" : "bg-black/30"} transition-colors duration-500`}>
+    <div
+      className={`flex h-full ${
+        isPlaying ? "bg-black" : "bg-black/30"
+      } transition-colors duration-500`}
+    >
       <div className="flex-1 p-6 flex justify-center items-center">
         <div className="relative overflow-hidden rounded-2xl shadow-2xl backdrop-blur-lg bg-white/5">
           <video
@@ -239,24 +267,39 @@ const doCatchUp = () => {
           />
           <CommentsOverlay
             videoRef={videoRef}
-            messages={messages.filter((m) => Math.abs(m.timestamp - currentTime) < 2)}
+            messages={messages.filter(
+              (m) => Math.abs(m.timestamp - currentTime) < 2
+            )}
           />
           {showCatchUp && (
             <button
               onClick={doCatchUp}
               className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-600/80 hover:bg-blue-700/90 text-white px-4 py-1 rounded-full backdrop-blur-md transition"
             >
-              Catch up to {new Date(lastRemoteTime * 1000).toISOString().substr(14,5)}
+              Catch up to{" "}
+              {new Date(lastRemoteTime * 1000).toISOString().substr(14, 5)}
             </button>
           )}
         </div>
       </div>
-      <div className={`relative transition-all duration-300 ${chatVisible ? "w-80" : "w-0"} overflow-hidden backdrop-blur-lg bg-black/10 rounded-r-2xl shadow-inner before:content-[''] before:absolute before:inset-y-0 before:-left-6 before:w-6 before:bg-gradient-to-r before:from-black/80 before:to-transparent`}>
-        {chatVisible && <ChatPanel onSend={sendChat} messages={messages} currentUser={userId} />}
+      <div
+        className={`relative transition-all duration-300 ${
+          chatVisible ? "w-80" : "w-0"
+        } overflow-hidden backdrop-blur-lg bg-black/10 rounded-r-2xl shadow-inner before:content-[''] before:absolute before:inset-y-0 before:-left-6 before:w-6 before:bg-gradient-to-r before:from-black/80 before:to-transparent`}
+      >
+        {chatVisible && (
+          <ChatPanel
+            onSend={sendChat}
+            messages={messages}
+            currentUser={userId}
+          />
+        )}
       </div>
       <button
         onClick={() => setChatVisible((v) => !v)}
-        className={`absolute top-5 right-5 p-2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white text-sm font-medium rounded-full shadow-md transition-opacity duration-300 ${chatVisible ? "opacity-100" : "opacity-50"}`}
+        className={`absolute top-5 right-5 p-2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white text-sm font-medium rounded-full shadow-md transition-opacity duration-300 ${
+          chatVisible ? "opacity-100" : "opacity-50"
+        }`}
       >
         {chatVisible ? "Close" : "Chat"}
       </button>

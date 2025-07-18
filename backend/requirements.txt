@@ -5,9 +5,11 @@ uvicorn[standard]==0.22.0        # the “[standard]” extra pulls in websocket
 # if you prefer to pin them yourself instead of using the extra:
 # websockets==11.0.3
 # wsproto==1.2.0
+gunicorn
 
 # pydantic & typing
 pydantic==2.11.7
+pydantic-settings>=1.0.0
 typing-extensions==4.14.1
 annotated-types==0.7.0
 typing-inspection==0.4.1
@@ -23,6 +25,13 @@ click==8.2.1
 python-dateutil==2.9.0.post0
 
 prometheus_client
+asyncpg
+sqlalchemy[asyncio]
+python-jose[cryptography]>=3.3.0
+python-dotenv
+
+passlib[bcrypt]
+
 # your SQLite “vault” needs no extra deps
 
 # (optional) if you ever log to JSON, you might pull in python-json-logger,

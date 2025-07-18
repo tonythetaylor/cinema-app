@@ -8,7 +8,7 @@ export default function App() {
   // const movieUrl = "/assets/Sinners.mp4"; // put a sample mp4 under public/assets
   const movieId = import.meta.env.VITE_MOVIE_ID;
   const movieUrl = import.meta.env.VITE_MOVIE_URL;
-
+console.log(movieId)
   // initialize from localStorage (if any)
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("userName") || "";
