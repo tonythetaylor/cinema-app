@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   api:
     build: ./backend
@@ -12,9 +11,17 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
       target: production
+      args:
+        # forward the env var into the build
+        # REACT_APP_MOVIE_URL: ${REACT_APP_MOVIE_URL}
+        VITE_MOVIE_URL: ${VITE_MOVIE_URL}
     image: cinema-frontend:prod
     ports:
       - "3000:80"
     depends_on:
       - api
+    # # make sure Docker picks up your .env
+    # env_file:
+    #   - ./.env

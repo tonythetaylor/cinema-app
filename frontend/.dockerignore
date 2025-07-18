@@ -1,3 +1,6 @@
 node_modules
 dist
 .git
+
+# ignoring movie file for external testing
+public/assets/*.mp4
