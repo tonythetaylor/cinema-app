@@ -18,12 +18,12 @@ from app.rest.recommend import router as recommend_router
 from app.ws.chat import router as chat_ws_router
 from app.ws.control import router as control_ws_router
 from app.ws.signal import router as signal_ws_router
+from app.ws.lobby import router as lobby_ws_router
 
 # Feature routers
 from app.routers.vault.secrets import router as vault_router
-from app.routers.users import router as users_router
-from app.routers.users import router as auth_router
-from app.routers.users import router as profile_router
+from app.routers.users import users_router, auth_router, profile_router
+from app.routers.movies import movies_router, watch_party_router
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -50,11 +50,15 @@ app.include_router(recommend_router, tags=["recommend"])
 app.include_router(chat_ws_router, tags=["ws-chat"])
 app.include_router(control_ws_router, tags=["ws-control"])
 app.include_router(signal_ws_router, tags=["ws-signal"])
+app.include_router(lobby_ws_router, tags=["ws-lobby"])
 
 app.include_router(vault_router,  tags=["vault"])
 app.include_router(users_router, tags=["users"])
 app.include_router(auth_router, tags=["auth"])
 app.include_router(profile_router, tags=["profile"])
+
+app.include_router(movies_router, tags=["movies"])
+app.include_router(watch_party_router, tags=["watch-parties"])
 
 @app.get("/metrics")
 async def metrics():

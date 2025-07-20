@@ -12,7 +12,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "noEmit": true
+    "noEmit": true,
+     "types": ["react", "react-dom"]
   },
   "include": ["src", "src/vite-env.d.ts"],
   "exclude": ["node_modules", "dist"]

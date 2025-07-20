@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
+from datetime import datetime
 
 class UserBase(BaseModel):
     username: str
@@ -6,14 +8,23 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
-class UserRead(UserBase):
+class UserRead(BaseModel):
     id: int
+    username: str
     is_active: bool
-    created_at: str
+    created_at: datetime
+    display_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
+class UserUpdate(BaseModel):
+    display_name: Optional[str] = Field(None, max_length=100)
+    bio: Optional[str] = Field(None, max_length=500)
+    avatar_url: Optional[str] = None
+    
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"

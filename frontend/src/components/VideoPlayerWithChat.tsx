@@ -1,5 +1,8 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import throttle from "lodash/throttle";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 import CommentsOverlay from "./CommentsOverlay";
 import ChatPanel from "./ChatPanel";
 
@@ -64,6 +67,8 @@ export default function VideoPlayerWithChat({
   const [chatVisible, setChatVisible] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
 
+  const { id } = useParams(); // id is the movieId
+
   const WS_SCHEME = window.location.protocol === "https:" ? "wss:" : "ws:";
 
   // ── Chat WS (same as before) ────────────────────────
@@ -86,10 +91,32 @@ export default function VideoPlayerWithChat({
       // }
       ws = new WebSocket(
         `${WS_SCHEME}//${window.location.host}` +
-          `/ws/chat?movieId=${movieId}&userId=${encodeURIComponent(userId)}`
+          `/ws/chat?movieId=${id}&userId=${encodeURIComponent(userId)}`
       );
       ws.onmessage = handleChatMessage;
       ws.onopen = () => {
+        // Send "init" event immediately after connecting
+        ws.send(
+          JSON.stringify({
+            type: "init",
+            user: userId,
+            movieId: id,
+            timestamp: 0,
+            sentAt: new Date().toISOString(),
+          })
+        );
+
+        // Notify others explicitly on reconnect
+        ws.send(
+          JSON.stringify({
+            movieId: id,
+            user: "System",
+            text: `${userId} has joined the room.`,
+            timestamp: 0,
+            sentAt: new Date().toISOString(),
+          })
+        );
+
         pingInterval = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(
@@ -115,7 +142,7 @@ export default function VideoPlayerWithChat({
       clearTimeout(reconnectTimeout);
       ws.close();
     };
-  }, [movieId, userId, handleChatMessage]);
+  }, [id, userId, handleChatMessage]);
 
   const sendChat = (text: string) => {
     const ws = chatWsRef.current;
@@ -123,7 +150,7 @@ export default function VideoPlayerWithChat({
     if (!ws || ws.readyState !== WebSocket.OPEN || !vid) return;
     ws.send(
       JSON.stringify({
-        movieId,
+        id,
         user: userId,
         text,
         timestamp: Math.floor(vid.currentTime),
@@ -156,7 +183,7 @@ export default function VideoPlayerWithChat({
 
   useEffect(() => {
     const ws = new WebSocket(
-      `${WS_SCHEME}//${window.location.host}/ws/control?movieId=${movieId}`
+      `${WS_SCHEME}//${window.location.host}/ws/control?movieId=${id}`
     );
     ws.onmessage = handleControlMessage;
     ctlWsRef.current = ws;
@@ -177,7 +204,7 @@ export default function VideoPlayerWithChat({
       clearInterval(pingInt);
       ws.close();
     };
-  }, [movieId, handleControlMessage]);
+  }, [id, handleControlMessage]);
 
   const broadcastControl = (type: ControlEvent["type"]) => {
     const vid = videoRef.current;

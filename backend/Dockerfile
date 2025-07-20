@@ -7,6 +7,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # copy your code
 COPY app app
+COPY alembic alembic
+COPY alembic.ini .
+
 # vault.db will be bind-mounted at runtime
 
 # production entrypoint: Gunicorn with 4 workers

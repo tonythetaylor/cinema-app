@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # full DATABASE_URL, e.g. postgresql+asyncpg://user:pw@host/db
     DATABASE_URL: AnyUrl
-
+    DOCKER_ENV: bool = False
     # SQLite “vault” filepath (if you ever still need it)
     VAULT_DB_PATH: str = os.path.join(os.getcwd(), "vault.db")
     
@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     # CORS
     CLIENT_ORIGINS: list[str] = [
         "http://localhost:3000",
+        "http://localhost:3001",
         "http://192.168.1.174:3000",
         "https://app.local",
     ]

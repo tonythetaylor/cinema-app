@@ -1,12 +1,18 @@
 services:
   db:
     image: postgres:15
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
     environment:
       POSTGRES_USER:     postgres
-      POSTGRES_PASSWORD: cinema_secretpassword
+      POSTGRES_PASSWORD: secretpassword
       POSTGRES_DB:       cinema
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   api:
     build:
@@ -14,7 +20,9 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./backend/.env
-    # environment:
+    environment:
+      - DOCKER_ENV=true
+      - PYTHONPATH=/app 
     #   # override or set DATABASE_URL if it’s not picked up from .env:
     #   DATABASE_URL: "postgresql+asyncpg://postgres:cinema_secretpassword@db:5432/cinema"
     volumes:
@@ -22,7 +30,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build:

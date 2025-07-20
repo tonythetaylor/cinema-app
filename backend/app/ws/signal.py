@@ -1,27 +1,33 @@
-import json, logging
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from .shared import controls_by_movie
+import json, logging, asyncio
+from datetime import datetime, timezone
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from ..ws.shared import controls_by_movie, start_pinger
 
 log = logging.getLogger("uvicorn.error")
 router = APIRouter()
 
 @router.websocket("/ws/signal")
-async def ws_signal(ws: WebSocket):
+async def ws_signal(ws: WebSocket, movieId: str = Query(...)):
     await ws.accept()
-    clients_signal = controls_by_movie.setdefault("signal", [])
-    clients_signal.append(ws)
-    log.debug(f"[signal] connected ({len(clients_signal)})")
+    controls = controls_by_movie.setdefault(movieId, [])
+    controls.append(ws)
+
+    ping_task = asyncio.create_task(start_pinger(ws))
+    log.debug(f"[signal] connected to {movieId} ({len(controls)} total)")
+
     try:
         while True:
             sig = await ws.receive_text()
-            for peer in clients_signal.copy():
+            for peer in controls.copy():
+                if peer is ws:
+                    continue
                 try:
                     await peer.send_text(sig)
                 except:
-                    clients_signal.remove(peer)
+                    controls.remove(peer)
     except WebSocketDisconnect:
-        pass
+        log.debug(f"[signal] disconnected from {movieId}")
     finally:
-        if ws in clients_signal:
-            clients_signal.remove(ws)
-            log.debug(f"[signal] disconnected ({len(clients_signal)})")
+        ping_task.cancel()
+        if ws in controls:
+            controls.remove(ws)
